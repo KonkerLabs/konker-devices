@@ -396,15 +396,16 @@ void WiFiManager::handleWifi(boolean scan) {
   // add the extra parameters to the form
     server->sendContent(F("<br>"));
     server->sendContent(F("<P ALIGN=CENTER><h3>Configura&ccedil&atildeo do servidor MQTT</h3>"));
-//  for (int i = 0; i < _paramsCount; i++) {
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < _paramsCount; i++) {
+//    for (int i = 0; i < 4; i++) {
     if (_params[i] == NULL) {
       break;
     }
-    if (i==0) server->sendContent(F("<P ALIGN=CENTER>IP do Broker MQTT"));
-    if (i==1) server->sendContent(F("<P ALIGN=CENTER>Porta do Broker MQTT"));
-    if (i==2) server->sendContent(F("<P ALIGN=CENTER>Login do Broker"));
-    if (i==3) server->sendContent(F("<P ALIGN=CENTER>Senha do Broker"));
+    if (i==0) server->sendContent(F("<P ALIGN=CENTER>API Key"));
+    if (i==1) server->sendContent(F("<P ALIGN=CENTER>IP do Broker MQTT"));
+    if (i==2) server->sendContent(F("<P ALIGN=CENTER>Porta do Broker MQTT"));
+    if (i==3) server->sendContent(F("<P ALIGN=CENTER>Login do Broker"));
+    if (i==4) server->sendContent(F("<P ALIGN=CENTER>Senha do Broker"));
     String pitem = FPSTR(HTTP_FORM_PARAM);
     pitem.replace("{i}", _params[i]->getID());
     pitem.replace("{n}", _params[i]->getID());
