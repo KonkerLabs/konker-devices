@@ -24,11 +24,16 @@ char msgBufferIN[256];
 
 char device_id[17]; 
 char device_type[5];
-char api_key[17];
 char in_topic[32];
 char cmd_topic[32];
 char data_topic[32];
 char ack_topic[32];
+
+char dev_modifier[4] = "iot";
+char cmd_channel[8] = "command";
+char data_channel[5] = "data";
+char ack_channel[4] = "ack";
+
 
 Ticker t;
   
@@ -39,8 +44,9 @@ void saveConfigCallback() {
 }
 
 //----------------- Copiando parametros configurados via HTML ---------------------------
-void copyHTMLPar(char mqtt_server[], char mqtt_port[], char mqtt_login[], char mqtt_pass[], WiFiManagerParameter custom_mqtt_server, WiFiManagerParameter custom_mqtt_port, WiFiManagerParameter custom_mqtt_login, WiFiManagerParameter custom_mqtt_pass){
+void copyHTMLPar(char api_key[], char mqtt_server[], char mqtt_port[], char mqtt_login[], char mqtt_pass[], WiFiManagerParameter custom_api_key, WiFiManagerParameter custom_mqtt_server, WiFiManagerParameter custom_mqtt_port, WiFiManagerParameter custom_mqtt_login, WiFiManagerParameter custom_mqtt_pass){
 
+  strcpy(api_key, custom_api_key.getValue());
   strcpy(mqtt_server, custom_mqtt_server.getValue());
   strcpy(mqtt_port, custom_mqtt_port.getValue());
   strcpy(mqtt_login, custom_mqtt_login.getValue());
@@ -93,8 +99,16 @@ void spiffsMount(char mqtt_server[], char mqtt_port[], char mqtt_login[], char m
 }
 
 //----------------- Salvando arquivo de configuracao ---------------------------
-void saveConfigtoFile(char mqtt_server[],char mqtt_port[],char mqtt_login[],char mqtt_pass[])
+void saveConfigtoFile(char api_key[], char mqtt_server[],char mqtt_port[],char mqtt_login[],char mqtt_pass[])
 {
+  String SString;
+  SString = String(dev_modifier) + String("/") + String(api_key) + String("/") + String(cmd_channel);
+  SString.toCharArray(cmd_topic, SString.length()+1);
+  SString = String(dev_modifier) + String("/") + String(api_key) + String("/") + String(data_channel);
+  SString.toCharArray(data_topic, SString.length()+1);
+  SString = String(dev_modifier) + String("/") + String(api_key) + String("/") + String(ack_channel);
+  SString.toCharArray(ack_topic, SString.length()+1);
+        
   Serial.println("Salvando Configuracao");
   DynamicJsonBuffer jsonBuffer;
   JsonObject& json = jsonBuffer.createObject();
@@ -154,17 +168,16 @@ char *jsonMQTT_in_msg(char* msg)
   char *command;
   StaticJsonBuffer<200> jsonBuffer;
   JsonObject& jsonMSG = jsonBuffer.parseObject(msg);
-  device_id = jsonMSG["deviceId"]; 
+  device_id = jsonMSG["deviceId"];
   cmd = jsonMSG["command"];
   ts = jsonMSG["ts"];
   command=strdup(cmd);
   return command;
-        
   }
 //---------------------------------------------------------------------------
 
 
-//----------------- Feedback para o ACK (no momento eh um placeholder)--------------------------------
+//----------------- Feedback para o ACK (no momento eh um placeholder: soh escreve via serial)--------------------------------
 void simplef(int charcount) {
   enable=1;
   //int charcount=0;
@@ -195,7 +208,6 @@ void reconnect(PubSubClient client, char id[], const char *mqtt_login, const cha
     Serial.print("Tentando conectar no Broker MQTT...");
     // Tentando conectar no broker MQTT (PS.: Nao usar dois clientes com o mesmo nome. Causa desconexao no Mosquitto)
     if (client.connect(id, mqtt_login, mqtt_pass)) {
-//    if (client.connect(id,mqtt_login,mqtt_pass)) {
       Serial.println("Conectado!");
     } else {
       Serial.print("Falhou, rc=");

@@ -23,6 +23,7 @@ extern "C" {
 const char dev_ack[4] = "ack";
 
 //Variaveis da Configuracao em Json
+char api_key[17];
 char mqtt_server[16];
 char mqtt_port[5];
 char mqtt_login[32];
@@ -30,8 +31,8 @@ char mqtt_pass[32];
 char *mensagemjson;
 
 //Variaveis Fisicas
-int LED1 = 2;//4;
-int LED2 = 2;//5;
+int LED1 = 4;
+int LED2 = 5;
 int LEDState = 0;
 
 //String de command
@@ -76,6 +77,7 @@ void setup(){
   spiffsMount(mqtt_server, mqtt_port, mqtt_login, mqtt_pass, device_id, device_type, api_key, in_topic, cmd_topic, data_topic, ack_topic);  
 
   //Criando as variaveis dentro do WiFiManager
+  WiFiManagerParameter custom_api_key("api", "api key", api_key, 17);
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 16);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 5);
   WiFiManagerParameter custom_mqtt_login("login", "mqtt login", mqtt_login, 32);
@@ -87,8 +89,6 @@ void setup(){
   client.setServer(mqtt_server, atol(mqtt_port));
   client.setCallback(callback);
   client.subscribe(cmd_topic);
-  Serial.print("Topico: ");
-  Serial.println(in_topic);
   
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
@@ -102,6 +102,7 @@ void setup(){
   wifiManager.setBreakAfterConfig(1);
   wifiManager.setSaveConfigCallback(saveConfigCallback);
   
+  wifiManager.addParameter(&custom_api_key);
   wifiManager.addParameter(&custom_mqtt_server);
   wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_mqtt_login);
@@ -114,11 +115,11 @@ void setup(){
   if(!wifiManager.autoConnect("KonkerConfig")) {
     
     //Copiando parametros  
-    copyHTMLPar(mqtt_server, mqtt_port, mqtt_login, mqtt_pass, custom_mqtt_server, custom_mqtt_port, custom_mqtt_login, custom_mqtt_pass);
+    copyHTMLPar(api_key, mqtt_server, mqtt_port, mqtt_login, mqtt_pass, custom_api_key, custom_mqtt_server, custom_mqtt_port, custom_mqtt_login, custom_mqtt_pass);
     
     //Salvando Configuracao
     if (shouldSaveConfig) {  
-                             saveConfigtoFile(mqtt_server, mqtt_port, mqtt_login, mqtt_pass);
+                             saveConfigtoFile(api_key, mqtt_server, mqtt_port, mqtt_login, mqtt_pass);
                           }
     delay(2500);
     ESP.reset();
@@ -126,11 +127,11 @@ void setup(){
 
 //------------------- Caso tudo mais falhe copie os dados para o FS ----------------------
 //Copiando parametros  
-copyHTMLPar(mqtt_server, mqtt_port, mqtt_login, mqtt_pass, custom_mqtt_server, custom_mqtt_port, custom_mqtt_login, custom_mqtt_pass);
+copyHTMLPar(api_key, mqtt_server, mqtt_port, mqtt_login, mqtt_pass, custom_api_key, custom_mqtt_server, custom_mqtt_port, custom_mqtt_login, custom_mqtt_pass);
 
 //Salvando Configuracao
 if (shouldSaveConfig) {  
-  saveConfigtoFile(mqtt_server,mqtt_port,mqtt_login,mqtt_pass); 
+  saveConfigtoFile(api_key, mqtt_server,mqtt_port,mqtt_login,mqtt_pass); 
   }
 //-----------------------------------------------------------------------------------------
 
@@ -145,6 +146,8 @@ void loop(){
   if (!client.connected()) {
     reconnect(client, api_key, mqtt_login, mqtt_pass);
   }
+  digitalWrite(LED1, 0);
+  digitalWrite(LED2, 0);
   client.loop();
   client.subscribe(in_topic);
   if (received_msg==1)

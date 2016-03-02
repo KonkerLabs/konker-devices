@@ -25,6 +25,7 @@ extern "C" {
 const char dev_ack[4] = "ack";
 
 //Variaveis da Configuracao em Json
+char api_key[17];
 char mqtt_server[16];
 char mqtt_port[5];
 char mqtt_login[32];
@@ -44,7 +45,7 @@ char cmd[32];
 const char cmd1[] = "ButtonPressed";
 const char cmd2[] = "ButtonPressedLong";
 
-//Button
+//Buttonfloat
 unsigned long timestart;
 unsigned long timebutton;
 unsigned int longpress = 4000;
@@ -70,33 +71,36 @@ void callback(char* topic, byte* payload, unsigned int length) {
 // Setup do Microcontrolador: Vamos configurar o acesso serial, conectar no Wifi, configurar o MQTT e o GPIO do botao
 void setup(){
   
-  Serial.begin(115200);  
-
+  Serial.begin(115200);
+    
 //------------------- Montando Sistema de arquivos e copiando as configuracoes  ----------------------
 
   spiffsMount(mqtt_server, mqtt_port, mqtt_login, mqtt_pass, device_id, device_type, api_key, in_topic, cmd_topic, data_topic, ack_topic);  
 
   //Criando as variaveis dentro do WiFiManager
+  WiFiManagerParameter custom_api_key("api", "api key", api_key, 17);
   WiFiManagerParameter custom_mqtt_server("server", "mqtt server", mqtt_server, 16);
   WiFiManagerParameter custom_mqtt_port("port", "mqtt port", mqtt_port, 5);
   WiFiManagerParameter custom_mqtt_login("login", "mqtt login", mqtt_login, 32);
   WiFiManagerParameter custom_mqtt_pass("password", "mqtt pass", mqtt_pass, 32);
  
 
-//------------------- Configurando MQTT e botao ----------------------
+//------------------- Configurando MQTT e LED ----------------------
 
   client.setServer(mqtt_server, atol(mqtt_port));
   client.setCallback(callback);
+  client.subscribe(cmd_topic);
+  
   pinMode(buttonPin, INPUT);
   client.subscribe(ack_topic);
-
-
+  
 //------------------- Configuracao do WifiManager K ----------------------
   WiFiManager wifiManager;  
   wifiManager.setTimeout(500);
   wifiManager.setBreakAfterConfig(1);
   wifiManager.setSaveConfigCallback(saveConfigCallback);
   
+  wifiManager.addParameter(&custom_api_key);
   wifiManager.addParameter(&custom_mqtt_server);
   wifiManager.addParameter(&custom_mqtt_port);
   wifiManager.addParameter(&custom_mqtt_login);
@@ -109,11 +113,11 @@ void setup(){
   if(!wifiManager.autoConnect("KonkerConfig")) {
     
     //Copiando parametros  
-    copyHTMLPar(mqtt_server, mqtt_port, mqtt_login, mqtt_pass, custom_mqtt_server, custom_mqtt_port, custom_mqtt_login, custom_mqtt_pass);
+    copyHTMLPar(api_key, mqtt_server, mqtt_port, mqtt_login, mqtt_pass, custom_api_key, custom_mqtt_server, custom_mqtt_port, custom_mqtt_login, custom_mqtt_pass);
     
     //Salvando Configuracao
     if (shouldSaveConfig) {  
-                             saveConfigtoFile(mqtt_server, mqtt_port, mqtt_login, mqtt_pass);
+                             saveConfigtoFile(api_key, mqtt_server, mqtt_port, mqtt_login, mqtt_pass);
                           }
     delay(2500);
     ESP.reset();
@@ -121,15 +125,16 @@ void setup(){
 
 //------------------- Caso tudo mais falhe copie os dados para o FS ----------------------
 //Copiando parametros  
-copyHTMLPar(mqtt_server, mqtt_port, mqtt_login, mqtt_pass, custom_mqtt_server, custom_mqtt_port, custom_mqtt_login, custom_mqtt_pass);
+copyHTMLPar(api_key, mqtt_server, mqtt_port, mqtt_login, mqtt_pass, custom_api_key, custom_mqtt_server, custom_mqtt_port, custom_mqtt_login, custom_mqtt_pass);
 
 //Salvando Configuracao
 if (shouldSaveConfig) {  
-  saveConfigtoFile(mqtt_server,mqtt_port,mqtt_login,mqtt_pass); 
+  saveConfigtoFile(api_key, mqtt_server,mqtt_port,mqtt_login,mqtt_pass); 
   }
 //-----------------------------------------------------------------------------------------
 
 }
+
   
  // Loop com o programa principal
 void loop(){
@@ -141,7 +146,7 @@ void loop(){
     reconnect(client, api_key, mqtt_login, mqtt_pass);
   }
   client.loop();
-    
+  
   // Lendo o estado do botao. Como ele esta conectado em um divisor, o estado natural eh HIGH. Isso ocorre pois o GPIO2 nao pode ser inicializado em LOW.
   buttonState = digitalRead(buttonPin);
   if ((buttonState == LOW)&&(enable == 1)) {
@@ -161,12 +166,12 @@ void loop(){
         }
       
       //Por enquanto o TS é um placeholder.
-      
+
       mensagemjson = jsonMQTTmsgCMD("1454853486000",cmd);        
       if (messageACK(client, cmd_topic, mensagemjson, ack_topic, name_ok)) name_ok=0;
 
       temperature = float(100*analogRead(A0)/1024);
-      mensagemjson = jsonMQTTmsgDATA("1454853486000","temperature",temperature,"Celsius");
+      mensagemjson = jsonMQTTmsgDATA("000","temperature",temperature,"Celsius");
       if (messageACK(client, data_topic, mensagemjson, ack_topic, name_ok)) name_ok=0;
   }
 
