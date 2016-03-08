@@ -166,7 +166,7 @@ char *jsonMQTT_in_msg(char* msg)
   const char *cmd;
   const char *ts;
   char *command;
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonBuffer<256> jsonBuffer;
   JsonObject& jsonMSG = jsonBuffer.parseObject(msg);
   device_id = jsonMSG["deviceId"];
   cmd = jsonMSG["command"];

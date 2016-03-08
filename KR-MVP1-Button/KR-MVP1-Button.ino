@@ -21,6 +21,8 @@ extern "C" {
 
 #define sec             1000
 
+ADC_MODE(ADC_VCC);
+
 //ACK phrase
 const char dev_ack[4] = "ack";
 
@@ -35,7 +37,7 @@ char *mensagemjson;
 //Variaveis Fisicas
 int buttonPin = 2;
 int buttonState = 0;
-float temperature;
+int vcc;
 
 //Resultado da soma do ACK
 int name_ok = 0;
@@ -170,8 +172,8 @@ void loop(){
       mensagemjson = jsonMQTTmsgCMD("1454853486000",cmd);        
       if (messageACK(client, cmd_topic, mensagemjson, ack_topic, name_ok)) name_ok=0;
 
-      temperature = float(100*analogRead(A0)/1024);
-      mensagemjson = jsonMQTTmsgDATA("000","temperature",temperature,"Celsius");
+      vcc = ESP.getVcc();
+      mensagemjson = jsonMQTTmsgDATA("1454853486000","Voltage",vcc,"Milivolts");
       if (messageACK(client, data_topic, mensagemjson, ack_topic, name_ok)) name_ok=0;
   }
 
