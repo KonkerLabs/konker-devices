@@ -13,10 +13,10 @@ const char* password = "<Senha da Rede Wifi>";
 
 //Criando a função de callback
 void callback(char* topic, byte* payload, unsigned int length) {
-  // Essa função trata das mensagens que são recebidas no tópico no qual o Arduino esta inscrito
+  // Essa função trata das mensagens que são recebidas no tópico no qual o Arduino esta inscrito.
 }
 
-//Criando os objetos de conexão com a rede e com o servidor MQTT
+//Criando os objetos de conexão com a rede e com o servidor MQTT.
 WiFiClient espClient;
 PubSubClient client("mqtt.hackathon.konkerlabs.net", 1883, callback,espClient);
 ADC_MODE(ADC_VCC);
