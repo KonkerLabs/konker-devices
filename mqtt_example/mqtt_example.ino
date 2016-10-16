@@ -19,7 +19,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
 //Criando os objetos de conexão com a rede e com o servidor MQTT.
 WiFiClient espClient;
 PubSubClient client("mqtt.hackathon.konkerlabs.net", 1883, callback,espClient);
-ADC_MODE(ADC_VCC);
+ADC_MODE(ADC_VCC); //Essa linha diz para o ESP usar o ADC para ler a tensão VCC. Caso o ADC seja usado para leituras externas, essa linha deve ser comentada ou apagada.
 char mensagemC[100];
 
 void setup()
