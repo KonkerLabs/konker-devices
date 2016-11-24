@@ -2,18 +2,10 @@
 //needed for library
 #include <DNSServer.h>
 #include <ESP8266WebServer.h>
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager
+#include <WiFiManager.h>
 
-//for LED status
-#include <Ticker.h>
-Ticker ticker;
-
-void tick()
-{
-  //toggle state
-  int state = digitalRead(BUILTIN_LED);  // get the current state of GPIO1 pin
-  digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
-}
+//for LED id
+#include "BlinkerID.h"
 
 //gets called when WiFiManager enters configuration mode
 void configModeCallback (WiFiManager *myWiFiManager) {
@@ -22,17 +14,18 @@ void configModeCallback (WiFiManager *myWiFiManager) {
   //if you used auto generated SSID, print it
   Serial.println(myWiFiManager->getConfigPortalSSID());
   //entered config mode, make led toggle faster
-  ticker.attach(0.2, tick);
+  //ticker.attach(0.2, tick);
 }
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
-  
+
   //set led pin as output
   pinMode(BUILTIN_LED, OUTPUT);
-  // start ticker with 0.5 because we start in AP mode and try to connect
-  ticker.attach(0.6, tick);
+
+  // startBlickID
+  startBlinkID(4);
 
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
@@ -56,7 +49,7 @@ void setup() {
 
   //if you get here you have connected to the WiFi
   Serial.println("connected...yeey :)");
-  ticker.detach();
+  startBlinkID(0);// pass zero to stop
   //keep LED on
   digitalWrite(BUILTIN_LED, LOW);
 }
