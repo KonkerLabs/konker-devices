@@ -24,8 +24,7 @@ void setup() {
   //set led pin as output
   pinMode(BUILTIN_LED, OUTPUT);
 
-  // startBlickID
-  startBlinkID(4);
+
 
   //WiFiManager
   //Local intialization. Once its business is done, there is no need to keep it around
@@ -36,11 +35,45 @@ void setup() {
   //set callback that gets called when connecting to previous WiFi fails, and enters Access Point mode
   wifiManager.setAPCallback(configModeCallback);
 
+
+  Serial.println("scan start");
+  String ssidName="ESP";
+  int ESPMaxnum=0;
+
+  // WiFi.scanNetworks will return the number of networks found
+  int n = WiFi.scanNetworks();
+  delay(2000);
+
+  if (n == 0)
+    Serial.println("no networks found");
+  else
+  {
+    String ssidTempName=ssidName;
+    Serial.println(" networks found");
+    for (int i = 0; i < n; ++i){
+      String stringOne = WiFi.SSID(i).c_str();
+      int foundIndex = stringOne.indexOf(ssidName);
+      if (foundIndex==0){
+        int ESPnum=WiFi.SSID(i).substring(ssidTempName.length()+1, WiFi.SSID(i).length()).toInt();
+        if(ESPMaxnum<ESPnum){
+          ESPMaxnum=ESPnum;
+        }
+      }
+      delay(10);
+    }
+
+    ssidName=ssidName +"_"+(ESPMaxnum+1);
+  }
+
+  // startBlickID
+  startBlinkID(ESPMaxnum+1);
+
+
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an access point with the specified name
   //here  "AutoConnectAP"
   //and goes into a blocking loop awaiting configuration
-  if (!wifiManager.autoConnect()) {
+  if (!wifiManager.autoConnect(ssidName.c_str())) {
     Serial.println("failed to connect and hit timeout");
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
