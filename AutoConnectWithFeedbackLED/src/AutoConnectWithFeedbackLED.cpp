@@ -22,7 +22,7 @@ void setup() {
   Serial.begin(115200);
 
   //set led pin as output
-  pinMode(BUILTIN_LED, OUTPUT);
+  pinMode(_STATUS_LED, OUTPUT);
 
 
 
@@ -84,7 +84,7 @@ void setup() {
   Serial.println("connected...yeey :)");
   startBlinkID(0);// pass zero to stop
   //keep LED on
-  digitalWrite(BUILTIN_LED, LOW);
+  digitalWrite(_STATUS_LED, LOW);
 }
 
 void loop() {

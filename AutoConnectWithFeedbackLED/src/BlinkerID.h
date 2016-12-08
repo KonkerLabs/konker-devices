@@ -10,13 +10,14 @@ int  _bledWaitOffPeriod=4;
 int  _bledBlinksCount=0;
 int  _bledOffState=1;
 int  _bledWaitCount=0;
+int _STATUS_LED=2;
 
 
 void  _btick()
 {
   //toggle state
-  int state = digitalRead(BUILTIN_LED);  // get the current state of GPIO1 pin
-  digitalWrite(BUILTIN_LED, !state);     // set pin to the opposite state
+  int state = digitalRead(_STATUS_LED);  // get the current state of GPIO1 pin
+  digitalWrite(_STATUS_LED, !state);     // set pin to the opposite state
   if(_bledOffState==1){
     _bledBlinksCount=_bledBlinksCount+state;
   }else{
@@ -35,7 +36,7 @@ void  _bblink()
 
   }else{
     //set led off
-    digitalWrite(BUILTIN_LED, _bledOffState);
+    digitalWrite(_STATUS_LED, _bledOffState);
 
     if( _bledWaitCount< _bledWaitOffPeriod){
       // +1 count to keep led off
@@ -45,7 +46,7 @@ void  _bblink()
       // Reset variables start all over ain
 
       //set led off
-      digitalWrite(BUILTIN_LED,_bledOffState);
+      digitalWrite(_STATUS_LED,_bledOffState);
 
       _bledWaitCount=0;
       _bledBlinksCount=0;
